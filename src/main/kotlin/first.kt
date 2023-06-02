@@ -2,33 +2,43 @@ import java.io.File
 import java.io.InputStream
 
 fun main() {
-    var str: String = readGen("src/main/resources/genome.txt")
-    var startIndex: Int = if (str.length < 23) 0 else 20
+    var sequence: String = readGen("src/main/resources/genome.txt")
 
-    var startATG: Int = 0
-    var endATG: Int = 0
+    val orfs = findOpenReadingFrames(sequence)
+    println("ORFs: $orfs")
 
-    for(i in startIndex until str.length-3) {
-        if (str.subSequence(i, i + 3).equals("ATG")) {
-            startATG = i
-            for(j in i+3 until str.length-3 step 3) {
-                if (str.subSequence(j, j + 3).equals("TAA")
-                    || str.subSequence(j, j + 3).equals("TAG")
-                    || str.subSequence(j, j + 3).equals("TGA")) {
-                    endATG = j + 3
-//                    println("ans: " + startATG + " / " + endATG)
-                    println(str.subSequence(startATG, endATG))
-                    println(convertToProtein(str.subSequence(startATG, endATG)))
-                    println()
-                }
+    val protein = translateOrfToProtein(orfs.get(0))
+    println("Protein: $protein")
+
+}
+
+fun findOpenReadingFrames(sequence: String): List<String> {
+    val startCodons = setOf("AUG", "ATG")
+    val stopCodons = setOf("TAA", "TAG", "TGA")
+
+    val orfs = mutableListOf<String>()
+    var startIndex = -1
+
+    for (i in sequence.indices) {
+        if (i + 2 < sequence.length && startCodons.contains(sequence.substring(i, i+3))) {
+            startIndex = i + 3
+
+            while (startIndex + 2 < sequence.length &&
+                !stopCodons.contains(sequence.substring(startIndex, startIndex+3))) {
+                startIndex += 3
+            }
+
+            if (startIndex + 2 < sequence.length) {
+                orfs.add(sequence.substring(i, startIndex))
             }
         }
     }
 
+    return orfs
 }
 
-fun convertToProtein(seq: CharSequence): String {
-    var aminosToProtein: Map<String, String> = mapOf(
+fun translateOrfToProtein(orf: String): String {
+    val codonTable = mapOf(
         "AGG" to "R", "AGA" to "R", "AGC" to "S", "AGT" to "S",
         "AAG" to "K", "AAA" to "K", "AAC" to "N", "AAT" to "N",
         "ACG" to "T", "ACA" to "T", "ACC" to "T", "ACT" to "T",
@@ -50,14 +60,19 @@ fun convertToProtein(seq: CharSequence): String {
         "GTG" to "V", "GTA" to "V", "GTC" to "V", "GTT" to "V"
     )
 
-    var ans = ""
+    val protein = StringBuilder()
+    for (i in orf.indices step 3) {
+        if (i + 2 >= orf.length) break
 
-    for(i in 0 .. seq.length - 3 step 3) {
-        ans += aminosToProtein.get(seq.subSequence(i, i+3))
+        val codon = orf.substring(i, i+3)
+        val aminoAcid = codonTable[codon] ?: continue
+        if (aminoAcid == "_stop_") break
+
+        protein.append(aminoAcid)
     }
-
-    return ans
+    return protein.toString()
 }
+
 
 fun readGen(filename: String): String {
     val inputStream: InputStream = File(filename).inputStream()
