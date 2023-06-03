@@ -7,7 +7,8 @@
 
 ### Задание 2
 
-:)
+* Расположение в ``src/main/kotlin/second.kt``
+* _Fasta_ файл в ``src/main/resources/data.fasta``
 
 ### Задание 3
 

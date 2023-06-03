@@ -78,6 +78,13 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>1.8.20</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.biokotlin/biokotlin -->
+        <dependency>
+            <groupId>org.biokotlin</groupId>
+            <artifactId>biokotlin</artifactId>
+            <version>0.07</version>
+        </dependency>
+
     </dependencies>
 
 </project>
